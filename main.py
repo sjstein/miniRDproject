@@ -124,7 +124,7 @@ def main():
         print('Calibration file not found - creating default')
         calib_data = {'auto': {'min': 0, 'max': 1023}, 'indy': {'min': 0, 'max': 1023},
                       'dyn': {'min': 0, 'max': 1023}, 'thr0': 0, 'thr1': 114, 'thr2': 228, 'thr3' : 342,
-                      'thr4': 446, 'th5': 560, 'thr6': 674, 'thr7': 788, 'thr8': 902}
+                      'thr4': 446, 'thr5': 560, 'thr6': 674, 'thr7': 788, 'thr8': 902}
         fp = open(cal_fname, 'w')
         json_object = json.dumps(calib_data, indent=4)
         fp.write(json_object)
