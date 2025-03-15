@@ -136,10 +136,8 @@ def main():
     previous_indy = 255
     previous_auto = 0
     previous_dyn = 0
-    previous_throttle = 0
     previous_reverser = 2
     previous_counter = 0
-    previous_throttle_val = 0
     requested_notch = 0
     previous_notch = 0
 
@@ -313,13 +311,12 @@ def main():
                     throttle_val = current_message[i]
                     for j in range(9):
                         if throttle_val < calib_data[f'thr{j}'] + 20:   # Best guess at a deadband
-                            request_notch = j
+                            requested_notch = j
                             break
                     if requested_notch != previous_notch:
                         previous_notch = requested_notch
                         # print(f'Throttle update: {previous_notch}')
                         update_state(out_sock, i, previous_notch, v_lvl=verbosity)
-                    previous_throttle_val = throttle_val
                 elif run8.cmd_list[i] == run8.cmd_indy_brake:
                     requested_indy = scale('indy', int(current_message[i]), calib_data)
                     if abs(previous_indy - requested_indy) > indy_deadband:
