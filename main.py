@@ -269,7 +269,7 @@ def main():
             thr_v2 = int(current_message[3])
             thr_n = []
             for i in range(9):
-                thr_n.append(calibrate_throttle(s_port, 0))
+                thr_n.append(calibrate_throttle(s_port, i))
             print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
                   f'MiniRD Recalibration completed\n--------------------')
 
