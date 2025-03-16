@@ -309,6 +309,8 @@ def main():
                 last_message[i] = current_message[i]  # Push current status value into previous list
                 if run8.cmd_list[i] == run8.cmd_throttle:
                     throttle_val = current_message[i]
+                    if verbosity > 2:
+                        print(f'Throttle rval: {throttle_val}')
                     for j in range(9):
                         if throttle_val < calib_data[f'thr{j}'] + 20:   # Best guess at a deadband
                             requested_notch = j
