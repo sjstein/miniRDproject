@@ -163,9 +163,12 @@ def main():
     parser.add_argument('-p', '--port', help='Serial (COM) port test', default=None, type=str)
     parser.add_argument('-v', '--verbosity', help=f'Verbosity level 0 (silent) to 3 (most verbose).',
                         type=int, default=0)
+    parser.add_argument('-t', '--throttle', help=f'Throttle deadband value (default: {throttle_delta}).',
+                        type=int, default=throttle_delta)
     args = parser.parse_args()
     valid_port = args.port
     verbosity = args.verbosity
+    td = args.throttle
 
     # Find valid COM port
     if not valid_port:
@@ -312,7 +315,8 @@ def main():
                     if verbosity > 2:
                         print(f'Throttle rval: {throttle_val}')
                     for j in range(9):
-                        if throttle_val < calib_data[f'thr{j}'] + 20:   # Best guess at a deadband
+                        if (calib_data[f'thr{j}'] - td < throttle_val
+                                < calib_data[f'thr{j}'] + td):
                             requested_notch = j
                             break
                     if requested_notch != previous_notch:
