@@ -315,8 +315,8 @@ def main():
                     if verbosity > 2:
                         print(f'Throttle rval: {throttle_val}')
                     for j in range(9):
-                        if (calib_data[f'thr{j}'] - td < throttle_val
-                                < calib_data[f'thr{j}'] + td):
+                        if ((calib_data[f'thr{j}'] - td) < throttle_val
+                                < (calib_data[f'thr{j}'] + td)):
                             requested_notch = j
                             break
                     if requested_notch != previous_notch:
