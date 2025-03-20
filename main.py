@@ -17,7 +17,7 @@ cal_fname = 'miniRD.cal'
 indy_deadband = 1
 auto_deadband = 1
 dyn_deadband = 1
-throttle_delta = 10  # Range band to indicate notches
+throttle_delta = 3  # Extend notch sensitivity a bit; command-line option to change
 
 # "Constants" for readability
 button_up = 0
@@ -113,6 +113,7 @@ def calibrate_throttle(port, notch : int):
     port.write(b'r\n')
     in_line = port.readline().decode('utf-8')
     current_message = list(map(int, in_line.split(',')))
+    print(f'[{time.strftime("%H:%M:%S", time.localtime())}] Notch {notch} rval: {current_message[3]}')
     return int(current_message[3])
 
 
@@ -123,8 +124,12 @@ def main():
     except FileNotFoundError:
         print('Calibration file not found - creating default')
         calib_data = {'auto': {'min': 0, 'max': 1023}, 'indy': {'min': 0, 'max': 1023},
-                      'dyn': {'min': 0, 'max': 1023}, 'thr0': 0, 'thr1': 114, 'thr2': 228, 'thr3' : 342,
-                      'thr4': 446, 'thr5': 560, 'thr6': 674, 'thr7': 788, 'thr8': 902}
+                      'dyn': {'min': 0, 'max': 1023},
+                      'thr0': {'min': 0, 'max': 80}, 'thr1': {'min': 100, 'max': 180},
+                      'thr2': {'min': 200, 'max': 300}, 'thr3': {'min': 320, 'max': 420},
+                      'thr4': {'min': 440, 'max': 540}, 'thr5': {'min': 560, 'max': 660},
+                      'thr6': {'min': 680, 'max': 780}, 'thr7': {'min': 800, 'max': 900},
+                      'thr8': {'min': 920, 'max': 1024}}
         fp = open(cal_fname, 'w')
         json_object = json.dumps(calib_data, indent=4)
         fp.write(json_object)
@@ -156,6 +161,7 @@ def main():
     alerter_pressed = False
 
     perform_cal = False
+    perform_thr_cal = False
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Python script to test com port',
@@ -291,6 +297,34 @@ def main():
             print(f'----------\nNew Calibration data saved to {cal_fname}\nRestarting daemon\n------------')
             perform_cal = False
 
+        if perform_thr_cal:
+            print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
+                  f'MiniRD Throttle calibration requested\n--------------------\n')
+            input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
+                  f'--> Move throttle up to notch 2')
+            thr_n_up = []   # Moving up the notches
+            for i in range(9):
+                thr_n_up.append(calibrate_throttle(s_port, i))
+            input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
+                  f'--> Move throttle down to notch 6')
+            thr_n_dwn = []  # Moving down the notches
+            for i in range(8, -1, -1):
+                thr_n_dwn.append(calibrate_throttle(s_port, i))
+            for i in range(9):
+                calib_data[f'thr{i}']['min'] = min(thr_n_up[i], thr_n_dwn[8-i])
+                calib_data[f'thr{i}']['max'] = max(thr_n_up[i], thr_n_dwn[8-i])
+
+            print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
+                  f'MiniRD Recalibration completed\n--------------------')
+
+            print(f'New calibration: {calib_data}')
+            fp = open(cal_fname, 'w')
+            json_object = json.dumps(calib_data, indent=4)
+            fp.write(json_object)
+            fp.close()
+            print(f'----------\nNew Calibration data saved to {cal_fname}\nRestarting daemon\n------------')
+            perform_thr_cal = False
+
         s_port.write(b'r\n')  # Ask arduino for a status string
         in_line = s_port.readline().decode('utf-8')  # Read status values
         current_message = list(map(int, in_line.split(',')))  # Convert to list
@@ -315,8 +349,8 @@ def main():
                     if verbosity > 2:
                         print(f'Throttle rval: {throttle_val}')
                     for j in range(9):
-                        if ((calib_data[f'thr{j}'] - td) < throttle_val
-                                < (calib_data[f'thr{j}'] + td)):
+                        if ((calib_data[f'thr{j}']['min'] - td) < throttle_val
+                                < (calib_data[f'thr{j}']['max'] + td)):
                             requested_notch = j
                             break
                     if requested_notch != previous_notch:
@@ -414,8 +448,7 @@ def main():
                         update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_bell:
                     if alt_key_pressed(current_message):
-                        # No alt function defined yet
-                        pass
+                        perform_thr_cal = True
                     else:
                         update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_alerter:
