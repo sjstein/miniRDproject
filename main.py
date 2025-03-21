@@ -161,7 +161,6 @@ def main():
     alerter_pressed = False
 
     perform_cal = False
-    perform_thr_cal = False
 
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description='Python script to test com port',
@@ -252,78 +251,73 @@ def main():
         if perform_cal:
             print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
                   f'MiniRD Recalibration requested\n--------------------\n')
-            input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'--> Move all levers (except throttle) to one extreme and press return')
-            print(f'[{time.strftime("%H:%M:%S", time.localtime())}] <-- Reading current lever values')
-            time.sleep(1)
-            s_port.write(b'r\n')
-            in_line = s_port.readline().decode('utf-8')
-            current_message = list(map(int, in_line.split(',')))
-            auto_v1 = int(current_message[0])
-            indy_v1 = int(current_message[1])
-            dyn_v1 = int(current_message[2])
-            thr_v1 = int(current_message[3])
-            input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'--> Move all levers (except throttle) to their other extremes and press return')
-            print(f'[{time.strftime("%H:%M:%S", time.localtime())}] <-- Reading current lever values')
-            time.sleep(1)
-            s_port.write(b'r\n')
-            in_line = s_port.readline().decode('utf-8')
-            current_message = list(map(int, in_line.split(',')))
-            auto_v2 = int(current_message[0])
-            indy_v2 = int(current_message[1])
-            dyn_v2 = int(current_message[2])
-            thr_v2 = int(current_message[3])
-            thr_n = []
-            for i in range(9):
-                thr_n.append(calibrate_throttle(s_port, i))
-            print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'MiniRD Recalibration completed\n--------------------')
+            resp = input(f'What type of calibration: (b)rake levers, (t)hrottle notches, (a)ll, or (c)ancel? ')
+            cal_brakes = True
+            cal_throttle = True
+            if resp.lower() == 'c':
+                print(f'Calibration cancelled')
+                cal_throttle = False
+                cal_brakes = False
+            if resp.lower() == 'b':
+                cal_throttle = False
+            if resp.lower() == 't':
+                cal_brakes = False
 
-            print(f'Old calibration: {calib_data}')
-            calib_data['auto']['min'] = min(auto_v1, auto_v2)
-            calib_data['auto']['max'] = max(auto_v1, auto_v2)
-            calib_data['indy']['min'] = min(indy_v1, indy_v2)
-            calib_data['indy']['max'] = max(indy_v1, indy_v2)
-            calib_data['dyn']['min'] = min(dyn_v1, dyn_v2)
-            calib_data['dyn']['max'] = max(dyn_v1, dyn_v2)
-            for i in range(9):
-                calib_data[f'thr{i}'] = thr_n[i]
-            print(f'New calibration: {calib_data}')
-            fp = open(cal_fname, 'w')
-            json_object = json.dumps(calib_data, indent=4)
-            fp.write(json_object)
-            fp.close()
-            print(f'----------\nNew Calibration data saved to {cal_fname}\nRestarting daemon\n------------')
+            if cal_brakes:
+                input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
+                      f'--> Move all levers (except throttle) to one extreme and press return')
+                print(f'[{time.strftime("%H:%M:%S", time.localtime())}] <-- Reading current lever values')
+                time.sleep(1)
+                s_port.write(b'r\n')
+                in_line = s_port.readline().decode('utf-8')
+                current_message = list(map(int, in_line.split(',')))
+                auto_v1 = int(current_message[0])
+                indy_v1 = int(current_message[1])
+                dyn_v1 = int(current_message[2])
+                input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
+                      f'--> Move all levers (except throttle) to their other extremes and press return')
+                print(f'[{time.strftime("%H:%M:%S", time.localtime())}] <-- Reading current lever values')
+                time.sleep(1)
+                s_port.write(b'r\n')
+                in_line = s_port.readline().decode('utf-8')
+                current_message = list(map(int, in_line.split(',')))
+                auto_v2 = int(current_message[0])
+                indy_v2 = int(current_message[1])
+                dyn_v2 = int(current_message[2])
+                # Update calibration structure
+                calib_data['auto']['min'] = min(auto_v1, auto_v2)
+                calib_data['auto']['max'] = max(auto_v1, auto_v2)
+                calib_data['indy']['min'] = min(indy_v1, indy_v2)
+                calib_data['indy']['max'] = max(indy_v1, indy_v2)
+                calib_data['dyn']['min'] = min(dyn_v1, dyn_v2)
+                calib_data['dyn']['max'] = max(dyn_v1, dyn_v2)
+
+            if cal_throttle:
+                input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
+                      f'--> Move throttle up to notch 2 and press return')
+                thr_n_up = []  # Moving up the notches
+                for i in range(9):
+                    thr_n_up.append(calibrate_throttle(s_port, i))
+                input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
+                      f'--> Move throttle down to notch 6 and press return')
+                thr_n_dwn = []  # Moving down the notches
+                for i in range(8, -1, -1):
+                    thr_n_dwn.append(calibrate_throttle(s_port, i))
+                for i in range(9):
+                    calib_data[f'thr{i}']['min'] = min(thr_n_up[i], thr_n_dwn[8 - i])
+                    calib_data[f'thr{i}']['max'] = max(thr_n_up[i], thr_n_dwn[8 - i])
+
+            if cal_throttle or cal_brakes:
+                print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
+                      f'MiniRD Recalibration completed\n--------------------')
+                print(f'New calibration: {calib_data}')
+                fp = open(cal_fname, 'w')
+                json_object = json.dumps(calib_data, indent=4)
+                fp.write(json_object)
+                fp.close()
+                print(f'----------\nNew Calibration data saved to {cal_fname}\nRestarting daemon\n------------')
             perform_cal = False
 
-        if perform_thr_cal:
-            print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'MiniRD Throttle calibration requested\n--------------------\n')
-            input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'--> Move throttle up to notch 2')
-            thr_n_up = []   # Moving up the notches
-            for i in range(9):
-                thr_n_up.append(calibrate_throttle(s_port, i))
-            input(f'[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'--> Move throttle down to notch 6')
-            thr_n_dwn = []  # Moving down the notches
-            for i in range(8, -1, -1):
-                thr_n_dwn.append(calibrate_throttle(s_port, i))
-            for i in range(9):
-                calib_data[f'thr{i}']['min'] = min(thr_n_up[i], thr_n_dwn[8-i])
-                calib_data[f'thr{i}']['max'] = max(thr_n_up[i], thr_n_dwn[8-i])
-
-            print(f'--------------------\n[{time.strftime("%H:%M:%S", time.localtime())}] '
-                  f'MiniRD Recalibration completed\n--------------------')
-
-            print(f'New calibration: {calib_data}')
-            fp = open(cal_fname, 'w')
-            json_object = json.dumps(calib_data, indent=4)
-            fp.write(json_object)
-            fp.close()
-            print(f'----------\nNew Calibration data saved to {cal_fname}\nRestarting daemon\n------------')
-            perform_thr_cal = False
 
         s_port.write(b'r\n')  # Ask arduino for a status string
         in_line = s_port.readline().decode('utf-8')  # Read status values
@@ -448,7 +442,7 @@ def main():
                         update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_bell:
                     if alt_key_pressed(current_message):
-                        perform_thr_cal = True
+                        pass    # No alt function yet
                     else:
                         update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_alerter:
