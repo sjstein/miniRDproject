@@ -68,14 +68,14 @@ void setup()
     Serial.begin(9600);
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, HIGH);
-    pinMode(pb0Pin, INPUT);
-    pinMode(pb1Pin, INPUT);
-    pinMode(pb2Pin, INPUT);
-    pinMode(pb3Pin, INPUT);
-    pinMode(pb4Pin, INPUT);
-    pinMode(pb5Pin, INPUT);
-    pinMode(pb6Pin, INPUT);
-    pinMode(pb7Pin, INPUT);
+    pinMode(pb0Pin, INPUT_PULLUP);  // Bail
+    pinMode(pb1Pin, INPUT_PULLUP);  // Horn
+    pinMode(pb2Pin, INPUT_PULLUP);  // Bell
+    pinMode(pb3Pin, INPUT_PULLUP);  // Front headlight
+    pinMode(pb4Pin, INPUT_PULLUP);  // Rear headlight
+    pinMode(pb5Pin, INPUT_PULLUP);  // Wiper
+    pinMode(pb6Pin, INPUT_PULLUP);  // Sander
+    pinMode(pb7Pin, INPUT_PULLUP);  // Alerter
 }
 
 String scale(int input){
