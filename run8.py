@@ -15,7 +15,7 @@ cmd_horn = 8
 cmd_indy_brake = 9
 cmd_bail = 10
 cmd_iso_switch = 11
-cmd_park_break_set = 12
+cmd_park_brake_set = 12
 cmd_park_brake_rel = 13
 cmd_reverser = 14
 cmd_sand = 15
@@ -43,7 +43,7 @@ cmd_radio_dtmf_mode = 36
 cmd_cktbrk_ctl = 37
 cmd_cktbrk_dbrake = 38
 cmd_cktbrk_engrun = 39
-cmd_gktbrk_genfld = 40
+cmd_cktbrk_genfld = 40
 cmd_cab_light = 41
 cmd_step_light = 42
 cmd_gauge_light = 43
@@ -61,6 +61,11 @@ cmd_service_sel = 54
 cmd_slow_speed_toggle = 55
 cmd_slow_speed_inc = 56
 cmd_slow_speed_dec = 57
+cmd_dpu_thr_inc = 58  # DPU Throttle Increase
+cmd_dpu_thr_dec = 59  # DPU Throttle Decrease
+cmd_dpu_dyn_setup = 60  # DPU Dyn‑Brake Setup
+cmd_dpu_fence_inc = 61  # DPU Fence Increase
+cmd_dpu_fence_dec = 62  # DPU Fence Decrease
 cmd_on = 1
 cmd_off = 0
 
@@ -72,11 +77,16 @@ reverser_neutral = 127
 reverser_reverse = 0
 
 cmd_list = [cmd_auto_brake, cmd_indy_brake, cmd_dyn_brake, cmd_throttle, cmd_reverser, cmd_counter,
-            cmd_bail, cmd_horn, cmd_bell, cmd_headlight_rear, cmd_headlight_front, cmd_sand, cmd_wiper, cmd_alerter]
+            cmd_dpu_fence_inc, cmd_dpu_thr_inc, cmd_dpu_dyn_setup, cmd_slow_speed_toggle, cmd_park_brake_set, 
+            cmd_wiper, cmd_sand, cmd_bell, cmd_alerter, cmd_gauge_light, cmd_cab_light, cmd_cktbrk_engrun, 
+            cmd_cktbrk_genfld, cmd_cktbrk_ctl, cmd_bail, cmd_horn, cmd_headlight_front, cmd_headlight_rear]
 
 cmd_dict = {cmd_auto_brake: 'auto_brake', cmd_indy_brake: 'indy_brake', cmd_dyn_brake: 'dyn_brake',
-            cmd_throttle: 'throttle', cmd_reverser: 'reverser', cmd_counter: 'counter', cmd_bail: 'bail',
-            cmd_horn: 'horn', cmd_bell: 'bell', cmd_headlight_rear: 'headlight_rear',
-            cmd_headlight_front: 'headlight_front', cmd_sand: 'sand', cmd_wiper: 'wiper', cmd_alerter: 'alerter'}
+            cmd_throttle: 'throttle', cmd_reverser: 'reverser', cmd_counter: 'counter', cmd_dpu_fence_inc: 'dpu_fence_inc',
+            cmd_dpu_thr_inc: 'dpu_thr_inc', cmd_dpu_dyn_setup: 'DPU_dyn_setup', cmd_slow_speed_toggle: 'slow_speed_toggle',
+            cmd_park_brake_set: 'park_brake', cmd_wiper: 'wiper',  cmd_sand: 'sand', cmd_bell: 'bell', cmd_alerter: 'alerter',
+            cmd_gauge_light: 'gauge/step light', cmd_cab_light: 'cab light', cmd_cktbrk_engrun: 'eng_run',
+            cmd_cktbrk_genfld: 'gen_field', cmd_cktbrk_ctl: 'control', cmd_bail: 'bail', cmd_horn: 'horn',
+            cmd_headlight_front: 'headlight_front', cmd_headlight_rear: 'headlight_rear'}
 
 
