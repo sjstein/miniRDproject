@@ -136,6 +136,7 @@ def main():
     slow_speed_value = 0
     gauge_light_value = 0
     cab_light_value = 0
+    iso_value = 3
 
     # Handbrake state: 0 = last was set, 1 = last was rel
     handbrake_toggle = 0
@@ -352,7 +353,7 @@ def main():
                     requested_dyn = scale('dyn', int(current_message[i]), calib_data)
                     if abs(previous_dyn - requested_dyn) > auto_deadband:
                         previous_dyn = requested_dyn
-                        if previous_dyn < 3:
+                        if previous_dyn < dyn_deadband:
                             previous_dyn = 0
                         update_state(out_sock, i, previous_dyn, v_lvl=verbosity)
 
@@ -423,7 +424,7 @@ def main():
                 #    sand_value = int(not sand_value)
                 #    update_state(out_sock, i, sand_value, v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_sand:
-                    update_state(out_sock, i, sand_value, v_lvl=verbosity)
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_bell:
                     update_state(out_sock, i, current_message[i], v_lvl=verbosity)    
                 elif run8.cmd_list[i] == run8.cmd_alerter:
@@ -462,6 +463,41 @@ def main():
                 elif run8.cmd_list[i] == run8.cmd_headlight_front:
                     update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 elif run8.cmd_list[i] == run8.cmd_headlight_rear:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_0:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_1:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_2:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_3:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_4:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_5:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_6:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_7:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_8:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_9:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_dtmf_s:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_auto_mu:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_auto_start:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_iso_switch and current_message[i] == button_down:    
+                    iso_value += 1
+                    if iso_value > 2:
+                        iso_value = 0
+                    update_state(out_sock, i, iso_value, v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_radio_ch_mode:
+                    update_state(out_sock, i, current_message[i], v_lvl=verbosity)
+                elif run8.cmd_list[i] == run8.cmd_radio_dtmf_mode:
                     update_state(out_sock, i, current_message[i], v_lvl=verbosity)
                 else:
                     pass
